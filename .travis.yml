@@ -1,0 +1,24 @@
+language: ruby
+
+sudo: required
+
+services:
+  - docker
+
+rvm:
+  - 2.2
+  - 2.3.0
+matrix:
+  allow_failures:
+    - rvm: 2.3.0
+  fast_finish: true
+
+before_install:
+  - bundle install
+bundler_args: --without documentation development production
+cache: bundler
+
+script:
+  - bundle exec rake
+  - ./bin/build
+  - docker ps -a

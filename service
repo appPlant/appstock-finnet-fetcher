@@ -1,0 +1,10 @@
+#!/usr/bin/ruby
+
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'scraper'
+
+file_box = ENV.fetch 'FILE_BOX', File.join(__dir__, 'vendor/mount')
+
+Scraper.new(file_box: file_box).run

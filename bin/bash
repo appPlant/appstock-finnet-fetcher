@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+docker run -v `pwd`/vendor/mount:/usr/app/vendor/mount -it finnet-stock-scraper /bin/sh

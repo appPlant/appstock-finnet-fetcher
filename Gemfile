@@ -11,6 +11,7 @@ group :test do
   gem 'rake'
   gem 'rspec'
   gem 'webmock'
+  gem 'fakefs'
   gem 'simplecov'
   gem 'codeclimate-test-reporter'
 end

@@ -1,3 +1,4 @@
+require 'fakefs/spec_helpers'
 
 RSpec.describe Scraper do
   let(:base_url) { 'http://www.finanzen.net/aktien/aktien_suche.asp' }
@@ -29,7 +30,7 @@ RSpec.describe Scraper do
   end
 
   context 'network timeout' do
-    before { stub_request(:any, base_url).to_timeout }
+    before { stub_request(:get, base_url).to_timeout }
 
     describe '#indexes' do
       subject { scraper.indexes }
@@ -41,7 +42,7 @@ RSpec.describe Scraper do
     let(:page) { Nokogiri::HTML('<html><body></body></html>') }
 
     describe '#indexes' do
-      before { stub_request(:any, base_url) }
+      before { stub_request(:get, base_url) }
       subject { scraper.indexes }
       it { is_expected.to be_empty }
     end
@@ -59,6 +60,13 @@ RSpec.describe Scraper do
 
   context 'good content' do
     let(:page) { Nokogiri::HTML(content) }
+
+    describe '#indexes' do
+      let(:content) { File.read('spec/fixtures/dax.html') }
+      subject { scraper.indexes.count }
+      before { stub_request(:get, base_url).to_return(body: content) }
+      it { is_expected.to be(197) }
+    end
 
     context 'DAX 30' do
       let(:content) { File.read('spec/fixtures/dax.html') }
@@ -85,6 +93,47 @@ RSpec.describe Scraper do
       describe '#linked_pages' do
         subject { scraper.linked_pages(page) }
         it { is_expected.to be_any }
+      end
+    end
+  end
+
+  describe '#run' do
+    before do
+      @url = stub_request(:get, /inIndex=#{index}/i).to_return(body: content)
+      allow(scraper).to receive(:indexes).and_return [index]
+    end
+
+    context 'DAX 30' do
+      include FakeFS::SpecHelpers
+
+      let(:content) { File.read('spec/fixtures/dax.html') }
+      let(:index) { 1 }
+
+      before { scraper.run }
+
+      describe '#run' do
+        it { expect(@url).to have_been_requested }
+        it('should create file box') { expect(File).to exist(scraper.file_box) }
+        it('should create 1 file') do
+          expect(Dir.entries(scraper.file_box).count).to be(3)
+        end
+      end
+    end
+
+    context 'NASDAQ 100' do
+      include FakeFS::SpecHelpers
+
+      let(:content) { File.read('spec/fixtures/nasdaq.html') }
+      let(:index) { 9 }
+
+      before { scraper.run }
+
+      describe '#run' do
+        it { expect(@url).to have_been_requested.times(3) }
+        it('should create file box') { expect(File).to exist(scraper.file_box) }
+        it('should create 3 files') do
+          expect(Dir.entries(scraper.file_box).count).to be(5)
+        end
       end
     end
   end

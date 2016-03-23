@@ -149,7 +149,7 @@ class Scraper
   #
   # @return [ Void ]
   def on_complete(res)
-    url    = res.effective_url
+    url    = res.request.url
     page   = Nokogiri::HTML(res.body)
     stocks = stocks(page).unshift(url)
 

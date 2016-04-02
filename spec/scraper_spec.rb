@@ -36,6 +36,27 @@ RSpec.describe Scraper do
       subject { scraper.indexes }
       it { is_expected.to be_empty }
     end
+
+    describe '#fetch' do
+      before { scraper.run }
+
+      it("should't create the file box") do
+        expect(File).to_not exist(scraper.file_box)
+      end
+    end
+
+    describe '#fetch(DAX)' do
+      include FakeFS::SpecHelpers
+
+      before do
+        stub_request(:get, /inIndex=1/i).to_timeout
+        scraper.run ['aktien/aktien_suche.asp?inIndex=1']
+      end
+
+      it('should create no files') do
+        expect(Dir.entries(scraper.file_box).count).to be(2)
+      end
+    end
   end
 
   context 'when the response has wrong content' do

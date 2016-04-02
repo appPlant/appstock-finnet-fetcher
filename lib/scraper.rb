@@ -169,9 +169,9 @@ class Scraper
   def on_complete(res)
     url    = res.request.url
     page   = Nokogiri::HTML(res.body)
-    stocks = stocks(page).unshift(url)
+    stocks = stocks(page)
 
-    upload_stocks(stocks)
+    upload_stocks(stocks.unshift(url)) if stocks.any?
     linked_pages(page).each { |site| scrape site } if follow_linked_pages? url
   end
 

@@ -133,6 +133,8 @@ class Scraper
   def run(indizes = indexes)
     url = 'aktien/aktien_suche.asp?inBranche=0&inLand=0'
 
+    return unless indizes.any?
+
     FileUtils.mkdir_p @file_box
 
     indizes.each { |index| scrape "#{url}&inIndex=#{index}" }

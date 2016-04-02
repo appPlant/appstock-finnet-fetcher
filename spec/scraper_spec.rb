@@ -29,7 +29,7 @@ RSpec.describe Scraper do
     end
   end
 
-  context 'network timeout' do
+  context 'when the network is offline' do
     before { stub_request(:get, base_url).to_timeout }
 
     describe '#indexes' do
@@ -38,7 +38,7 @@ RSpec.describe Scraper do
     end
   end
 
-  context 'bad content' do
+  context 'when the response has wrong content' do
     let(:page) { Nokogiri::HTML('<html><body></body></html>') }
 
     describe '#indexes' do
@@ -58,7 +58,7 @@ RSpec.describe Scraper do
     end
   end
 
-  context 'good content' do
+  context 'when the response has expected content' do
     let(:page) { Nokogiri::HTML(content) }
 
     describe '#indexes' do
@@ -103,7 +103,7 @@ RSpec.describe Scraper do
       allow(scraper).to receive(:indexes).and_return [index]
     end
 
-    context 'DAX 30' do
+    context 'when #indexes returns DAX only' do
       include FakeFS::SpecHelpers
 
       let(:content) { File.read('spec/fixtures/dax.html') }
@@ -111,16 +111,14 @@ RSpec.describe Scraper do
 
       before { scraper.run }
 
-      describe '#run' do
-        it { expect(@url).to have_been_requested }
-        it('should create file box') { expect(File).to exist(scraper.file_box) }
-        it('should create 1 file') do
-          expect(Dir.entries(scraper.file_box).count).to be(3)
-        end
+      it { expect(@url).to have_been_requested }
+      it('should create file box') { expect(File).to exist(scraper.file_box) }
+      it('should create 1 file') do
+        expect(Dir.entries(scraper.file_box).count).to be(3)
       end
     end
 
-    context 'NASDAQ 100' do
+    context 'when #indexes returns NASDAQ only' do
       include FakeFS::SpecHelpers
 
       let(:content) { File.read('spec/fixtures/nasdaq.html') }
@@ -128,12 +126,25 @@ RSpec.describe Scraper do
 
       before { scraper.run }
 
-      describe '#run' do
-        it { expect(@url).to have_been_requested.times(3) }
-        it('should create file box') { expect(File).to exist(scraper.file_box) }
-        it('should create 3 files') do
-          expect(Dir.entries(scraper.file_box).count).to be(5)
-        end
+      it { expect(@url).to have_been_requested.times(3) }
+      it('should create file box') { expect(File).to exist(scraper.file_box) }
+      it('should create 3 files') do
+        expect(Dir.entries(scraper.file_box).count).to be(5)
+      end
+    end
+
+    context 'when called with DAX only' do
+      include FakeFS::SpecHelpers
+
+      let(:content) { File.read('spec/fixtures/dax.html') }
+      let(:index) { 1 }
+
+      before { scraper.run ["aktien/aktien_suche.asp?inIndex=#{index}"] }
+
+      it { expect(@url).to have_been_requested }
+      it('should create file box') { expect(File).to exist(scraper.file_box) }
+      it('should create 1 file') do
+        expect(Dir.entries(scraper.file_box).count).to be(3)
       end
     end
   end

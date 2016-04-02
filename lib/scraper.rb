@@ -16,6 +16,10 @@ require 'securerandom'
 # @example Start the scraping process.
 #   Scraper.new.run
 #
+# @example Scrape all stocks from DAX and NASDAQ.
+#   Scraper.new.run(['aktien/aktien_suche.asp?inIndex=0',
+#                    'aktien/aktien_suche.asp?inIndex=9'])
+#
 # @example Get a list of all stock indexes.
 #   Scraper.new.indexes
 #
@@ -113,13 +117,25 @@ class Scraper
     page.css(sel).map { |link| abs_url link.attributes['href'].value }
   end
 
-  # Scrape indexes form search page, then scrape all stocks per index.
-  def run
+  # Run the hydra with the given links to scrape the stocks from the response.
+  # By default all indexes form search page will be added.
+  #
+  # @example Scrape all stocks from DAX and NASDAQ.
+  #   run(['aktien/aktien_suche.asp?inIndex=0',
+  #        'aktien/aktien_suche.asp?inIndex=9'])
+  #
+  # @example Scrape all stocks from all indexes.
+  #   run()
+  #
+  # @param [ Array<URI> ] Optional list of stock indexes.
+  #
+  # @return [ Void ]
+  def run(indizes = indexes)
     url = 'aktien/aktien_suche.asp?inBranche=0&inLand=0'
 
     FileUtils.mkdir_p @file_box
 
-    indexes.each { |index| scrape "#{url}&inIndex=#{index}" }
+    indizes.each { |index| scrape "#{url}&inIndex=#{index}" }
 
     @hydra.run
   end

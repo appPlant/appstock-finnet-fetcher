@@ -8,9 +8,9 @@ require 'securerandom'
 
 # The `Scraper` class scrapes finanzen.net to get a list of all stocks.
 # To do so it extracts all indexes from the search form to make a search
-# request to get all stocks per stock. In case of a paginated response it
+# request to get all stocks per index. In case of a paginated response it
 # follows all subsequent linked pages.
-# For each list a list gets created containing all stock links found on
+# For each index a list gets created containing all stock links found on
 # that page with the URL of the page in the first line.
 #
 # @example Start the scraping process.
@@ -199,7 +199,7 @@ class Scraper
   #
   # @param [ String ] A relative URI.
   #
-  # @return [ String ] The absolute URI.
+  # @return [ NET::URI ] The absolute URI.
   def abs_url(url)
     URI.join('http://www.finanzen.net', URI.escape(url.to_s))
   end

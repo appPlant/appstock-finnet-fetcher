@@ -7,7 +7,7 @@ RSpec.describe Scraper do
   let(:scraper) { described_class.new }
   subject { scraper }
 
-  it { is_expected.to respond_to(:run) }
+  it { is_expected.to respond_to(:indexes, :stocks, :linked_pages, :run) }
 
   describe '#follow_linked_pages?' do
     subject { scraper.follow_linked_pages? url }

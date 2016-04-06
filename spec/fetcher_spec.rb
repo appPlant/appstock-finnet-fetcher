@@ -1,16 +1,16 @@
 require 'fakefs/spec_helpers'
 
-RSpec.describe Scraper do
+RSpec.describe Fetcher do
   let(:base_url) { 'http://www.finanzen.net/aktien/aktien_suche.asp' }
   let(:base_params) { 'inBranche=0&inLand=0' }
   let(:search_url) { "#{base_url}?#{base_params}" }
-  let(:scraper) { described_class.new }
-  subject { scraper }
+  let(:fetcher) { described_class.new }
+  subject { fetcher }
 
   it { is_expected.to respond_to(:indexes, :stocks, :linked_pages, :run) }
 
   describe '#follow_linked_pages?' do
-    subject { scraper.follow_linked_pages? url }
+    subject { fetcher.follow_linked_pages? url }
 
     context 'aktien/aktien_suche.asp?inIndex=9' do
       let(:url) { "#{search_url}&inIndex=9" }
@@ -24,8 +24,8 @@ RSpec.describe Scraper do
 
     context 'UTF-8' do
       let(:url) { 'Orságos_Takar_És_Ker_BK_ON-Aktie' }
-      subject { scraper }
-      it { expect { scraper.follow_linked_pages? url }.to_not raise_error }
+      subject { fetcher }
+      it { expect { fetcher.follow_linked_pages? url }.to_not raise_error }
     end
   end
 
@@ -33,15 +33,15 @@ RSpec.describe Scraper do
     before { stub_request(:get, base_url).to_timeout }
 
     describe '#indexes' do
-      subject { scraper.indexes }
+      subject { fetcher.indexes }
       it { is_expected.to be_empty }
     end
 
     describe '#fetch' do
-      before { scraper.run }
+      before { fetcher.run }
 
       it("should't create the file box") do
-        expect(File).to_not exist(scraper.file_box)
+        expect(File).to_not exist(fetcher.file_box)
       end
     end
 
@@ -50,11 +50,11 @@ RSpec.describe Scraper do
 
       before do
         stub_request(:get, /inIndex=1/i).to_timeout
-        scraper.run ['aktien/aktien_suche.asp?inIndex=1']
+        fetcher.run ['aktien/aktien_suche.asp?inIndex=1']
       end
 
       it('should create no files') do
-        expect(Dir.entries(scraper.file_box).count).to be(2)
+        expect(Dir.entries(fetcher.file_box).count).to be(2)
       end
     end
   end
@@ -64,17 +64,17 @@ RSpec.describe Scraper do
 
     describe '#indexes' do
       before { stub_request(:get, base_url) }
-      subject { scraper.indexes }
+      subject { fetcher.indexes }
       it { is_expected.to be_empty }
     end
 
     describe '#stocks' do
-      subject { scraper.stocks(page) }
+      subject { fetcher.stocks(page) }
       it { is_expected.to be_empty }
     end
 
     describe '#linked_pages' do
-      subject { scraper.linked_pages(page) }
+      subject { fetcher.linked_pages(page) }
       it { is_expected.to be_empty }
     end
   end
@@ -84,7 +84,7 @@ RSpec.describe Scraper do
 
     describe '#indexes' do
       let(:content) { File.read('spec/fixtures/dax.html') }
-      subject { scraper.indexes.count }
+      subject { fetcher.indexes.count }
       before { stub_request(:get, base_url).to_return(body: content) }
       it { is_expected.to be(197) }
     end
@@ -93,12 +93,12 @@ RSpec.describe Scraper do
       let(:content) { File.read('spec/fixtures/dax.html') }
 
       describe '#stocks' do
-        subject { scraper.stocks(page).count }
+        subject { fetcher.stocks(page).count }
         it { is_expected.to be(30) }
       end
 
       describe '#linked_pages' do
-        subject { scraper.linked_pages(page) }
+        subject { fetcher.linked_pages(page) }
         it { is_expected.to be_empty }
       end
     end
@@ -107,12 +107,12 @@ RSpec.describe Scraper do
       let(:content) { File.read('spec/fixtures/nasdaq.html') }
 
       describe '#stocks' do
-        subject { scraper.stocks(page).count }
+        subject { fetcher.stocks(page).count }
         it { is_expected.to be(50) }
       end
 
       describe '#linked_pages' do
-        subject { scraper.linked_pages(page) }
+        subject { fetcher.linked_pages(page) }
         it { is_expected.to be_any }
       end
     end
@@ -121,7 +121,7 @@ RSpec.describe Scraper do
   describe '#run' do
     before do
       @url = stub_request(:get, /inIndex=#{index}/i).to_return(body: content)
-      allow(scraper).to receive(:indexes).and_return [index]
+      allow(fetcher).to receive(:indexes).and_return [index]
     end
 
     context 'when #indexes returns DAX only' do
@@ -130,12 +130,12 @@ RSpec.describe Scraper do
       let(:content) { File.read('spec/fixtures/dax.html') }
       let(:index) { 1 }
 
-      before { scraper.run }
+      before { fetcher.run }
 
       it { expect(@url).to have_been_requested }
-      it('should create file box') { expect(File).to exist(scraper.file_box) }
+      it('should create file box') { expect(File).to exist(fetcher.file_box) }
       it('should create 1 file') do
-        expect(Dir.entries(scraper.file_box).count).to be(3)
+        expect(Dir.entries(fetcher.file_box).count).to be(3)
       end
     end
 
@@ -145,12 +145,12 @@ RSpec.describe Scraper do
       let(:content) { File.read('spec/fixtures/nasdaq.html') }
       let(:index) { 9 }
 
-      before { scraper.run }
+      before { fetcher.run }
 
       it { expect(@url).to have_been_requested.times(3) }
-      it('should create file box') { expect(File).to exist(scraper.file_box) }
+      it('should create file box') { expect(File).to exist(fetcher.file_box) }
       it('should create 3 files') do
-        expect(Dir.entries(scraper.file_box).count).to be(5)
+        expect(Dir.entries(fetcher.file_box).count).to be(5)
       end
     end
 
@@ -160,12 +160,12 @@ RSpec.describe Scraper do
       let(:content) { File.read('spec/fixtures/dax.html') }
       let(:index) { 1 }
 
-      before { scraper.run ["aktien/aktien_suche.asp?inIndex=#{index}"] }
+      before { fetcher.run ["aktien/aktien_suche.asp?inIndex=#{index}"] }
 
       it { expect(@url).to have_been_requested }
-      it('should create file box') { expect(File).to exist(scraper.file_box) }
+      it('should create file box') { expect(File).to exist(fetcher.file_box) }
       it('should create 1 file') do
-        expect(Dir.entries(scraper.file_box).count).to be(3)
+        expect(Dir.entries(fetcher.file_box).count).to be(3)
       end
     end
   end

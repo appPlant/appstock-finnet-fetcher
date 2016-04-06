@@ -6,7 +6,7 @@ require 'nokogiri'
 require 'open-uri'
 require 'securerandom'
 
-# The `Scraper` class scrapes finanzen.net to get a list of all stocks.
+# The `Fetcher` class scrapes finanzen.net to get a list of all stocks.
 # To do so it extracts all indexes from the search form to make a search
 # request to get all stocks per index. In case of a paginated response it
 # follows all subsequent linked pages.
@@ -14,36 +14,36 @@ require 'securerandom'
 # that page with the URL of the page in the first line.
 #
 # @example Start the scraping process.
-#   Scraper.new.run
+#   Fetcher.new.run
 #
 # @example Scrape all stocks from DAX and NASDAQ.
-#   Scraper.new.run(['aktien/aktien_suche.asp?inIndex=0',
+#   Fetcher.new.run(['aktien/aktien_suche.asp?inIndex=0',
 #                    'aktien/aktien_suche.asp?inIndex=9'])
 #
 # @example Get a list of all stock indexes.
-#   Scraper.new.indexes
+#   Fetcher.new.indexes
 #
 # @example Get a list of all stocks of the DAX index.
-#   Scraper.new.stocks('aktien/aktien_suche.asp?inIndex=1')
+#   Fetcher.new.stocks('aktien/aktien_suche.asp?inIndex=1')
 #   #=> [http://www.finanzen.net/aktien/adidas-Aktie,
 #        http://www.finanzen.net/aktien/Allianz-Aktie, ...]
 #
 # @example Linked pages of the NASDAQ 100.
-#   Scraper.new.linked_pages('aktien/aktien_suche.asp?inIndex=9')
+#   Fetcher.new.linked_pages('aktien/aktien_suche.asp?inIndex=9')
 #   #=> ['aktien/aktien_suche.asp?intpagenr=2&inIndex=9',
 #        'aktien/aktien_suche.asp?intpagenr=3&inIndex=9']
-class Scraper
-  # Intialize the scraper.
+class Fetcher
+  # Intialize the fetcher.
   #
   # @example With the default file box location.
-  #   Scraper.new
+  #   Fetcher.new
   #
   # @example With a custom file box location.
-  #   Scraper.new file_box: '/Users/katzer/tmp'
+  #   Fetcher.new file_box: '/Users/katzer/tmp'
   #
   # @param [ String ] file_box: Optional information where to place the result.
   #
-  # @return [ Scraper ] A new scraper instance.
+  # @return [ Fetcher ] A new fetcher instance.
   def initialize(file_box: 'vendor/mount')
     @file_box = File.join(file_box, SecureRandom.uuid)
     @hydra    = Typhoeus::Hydra.new
@@ -83,7 +83,7 @@ class Scraper
     page.css(sel).map { |link| abs_url link.attributes['href'].value }
   end
 
-  # Determine whether the scraper has to follow linked lists in case of
+  # Determine whether the fetcher has to follow linked lists in case of
   # pagination. To follow is only required if the URL of the response
   # does not include the `intpagenr` query attribute.
   #
@@ -146,7 +146,7 @@ class Scraper
 
   # Scrape the listed stocks from the search result for a pre-given index.
   # The method workd async as the `on_complete` callback of the response
-  # object delegates to the scrapers `on_complete` method.
+  # object delegates to the fetchers `on_complete` method.
   #
   # @param [ String ] url A relative URL of a page with search results.
   #

@@ -12,12 +12,12 @@ RSpec.describe Fetcher do
   describe '#follow_linked_pages?' do
     subject { fetcher.follow_linked_pages? url }
 
-    context 'aktien/aktien_suche.asp?inIndex=9' do
+    context 'when its the head of the list' do
       let(:url) { "#{search_url}&inIndex=9" }
       it { is_expected.to be_truthy }
     end
 
-    context 'aktien/aktien_suche.asp?inIndex=9&intpagenr=2' do
+    context 'when its the tail of the list' do
       let(:url) { "#{search_url}&inIndex=9&intpagenr=2" }
       it { is_expected.to be_falsy }
     end

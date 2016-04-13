@@ -1,5 +1,6 @@
 /.yardoc/
 /vendor/bundle
+/vendor/mount
 build/
 /test/tmp/
 /lib/bundler/man/

@@ -3,6 +3,7 @@
 .rspec
 .gitignore
 .travis.yml
+.rubocop.yml
 bin
 coverage
 *.md

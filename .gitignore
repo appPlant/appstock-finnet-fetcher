@@ -8,6 +8,7 @@ build/
 Gemfile.lock
 .dat*
 .rvmrc
+.rubocop-http*
 /tmp/
 /doc/
 /.config

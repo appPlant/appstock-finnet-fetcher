@@ -35,21 +35,21 @@ require 'securerandom'
 class Fetcher
   # Intialize the fetcher.
   #
-  # @example With the default file box location.
+  # @example With the default drop box location.
   #   Fetcher.new
   #
-  # @example With a custom file box location.
-  #   Fetcher.new file_box: '/Users/katzer/tmp'
+  # @example With a custom drop box location.
+  #   Fetcher.new drop_box: '/Users/katzer/tmp'
   #
-  # @param [ String ] file_box: Optional information where to place the result.
+  # @param [ String ] drop_box: Optional information where to place the result.
   #
   # @return [ Fetcher ] A new fetcher instance.
-  def initialize(file_box: 'vendor/mount')
-    @file_box = File.join(file_box, SecureRandom.uuid)
+  def initialize(drop_box: 'vendor/mount')
+    @drop_box = File.join(drop_box, SecureRandom.uuid)
     @hydra    = Typhoeus::Hydra.new
   end
 
-  attr_reader :file_box
+  attr_reader :drop_box
 
   # Scrape all indexes from the page found under the `inIndex` menu.
   #
@@ -135,7 +135,7 @@ class Fetcher
 
     return unless indizes.any?
 
-    FileUtils.mkdir_p @file_box
+    FileUtils.mkdir_p @drop_box
 
     indizes.each { |index| scrape "#{url}&inIndex=#{index}" }
 
@@ -176,7 +176,7 @@ class Fetcher
   end
 
   # Save the list of stock links in a file. The location of that file is the
-  # former provided @file_box path or its default value.
+  # former provided @drop_box path or its default value.
   #
   # @example To save a file.
   #   upload_stocks(['http://www.finanzen.net/aktien/adidas-Aktie'])
@@ -186,7 +186,7 @@ class Fetcher
   #
   # @return [ File ] The created file.
   def upload_stocks(stocks)
-    File.open(File.join(@file_box, "#{SecureRandom.uuid}.txt"), 'w+') do |file|
+    File.open(File.join(@drop_box, "#{SecureRandom.uuid}.txt"), 'w+') do |file|
       stocks.each { |stock| file << "#{stock}\n" }
     end
   end

@@ -5,6 +5,6 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'fetcher'
 
-file_box = ENV.fetch 'FILE_BOX', File.join(__dir__, 'vendor/mount')
+drop_box = ENV.fetch 'FILE_BOX', File.join(__dir__, 'vendor/mount')
 
-Fetcher.new(file_box: file_box).run
+Fetcher.new(drop_box: drop_box).run

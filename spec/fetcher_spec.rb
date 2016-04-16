@@ -21,12 +21,6 @@ RSpec.describe Fetcher do
       let(:url) { "#{search_url}&inIndex=9&intpagenr=2" }
       it { is_expected.to be_falsy }
     end
-
-    context 'UTF-8' do
-      let(:url) { 'Orságos_Takar_És_Ker_BK_ON-Aktie' }
-      subject { fetcher }
-      it { expect { fetcher.follow_linked_pages? url }.to_not raise_error }
-    end
   end
 
   context 'when the network is offline' do

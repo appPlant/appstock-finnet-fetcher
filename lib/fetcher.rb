@@ -62,7 +62,7 @@ class Fetcher
     sel  = '#frmAktienSuche table select[name="inIndex"] option:not(:first-child)' # rubocop:disable Metrics/LineLength
     page = Nokogiri::HTML(open(abs_url('aktien/aktien_suche.asp')))
 
-    page.css(sel).map { |opt| opt.values[0].strip }
+    page.css(sel).map { |opt| opt['value'] }
   rescue Timeout::Error
     []
   end
@@ -76,11 +76,11 @@ class Fetcher
   #
   # @param [ Nokogiri::HTML ] page A parsed search result page.
   #
-  # @return [ Array<URI> ] List of URIs pointing to each stocks page.
+  # @return [ Array<String> ] List of URIs pointing to each stocks page.
   def stocks(page)
     sel = '#mainWrapper > div.main > div.table_quotes > div.content > table tr > td:not(.no_border):first-child > a:first-child' # rubocop:disable Metrics/LineLength
 
-    page.css(sel).map { |link| abs_url link.attributes['href'].value }
+    page.css(sel).map { |link| abs_url link['href'] }
   end
 
   # Determine whether the fetcher has to follow linked lists in case of
@@ -95,7 +95,7 @@ class Fetcher
   #   follow_linked_pages? 'aktien/aktien_suche.asp?inIndex=9&intpagenr=2'
   #   #=> false
   #
-  # @param [ String|URI ] url The URL of the HTTP request.
+  # @param [ String ] url The URL of the HTTP request.
   #
   # @return [ Boolean ] true if the linked pages have to be scraped as well.
   def follow_linked_pages?(url)
@@ -111,10 +111,10 @@ class Fetcher
   #
   # @param [ Nokogiri::HTML ] page A parsed search result page.
   #
-  # @return [ Array<URI> ] List of URIs pointing to each linked page.
+  # @return [ Array<String> ] List of URIs pointing to each linked page.
   def linked_pages(page)
     sel = '#mainWrapper > div.main > div.table_quotes > div.content > table tr:last-child div.paging > a:not(.image_button_right)' # rubocop:disable Metrics/LineLength
-    page.css(sel).map { |link| abs_url link.attributes['href'].value }
+    page.css(sel).map { |link| abs_url link['href'] }
   end
 
   # Run the hydra with the given links to scrape the stocks from the response.
@@ -127,7 +127,7 @@ class Fetcher
   # @example Scrape all stocks from all indexes.
   #   run()
   #
-  # @param [ Array<URI> ] Optional list of stock indexes.
+  # @param [ Array<String> ] Optional list of stock indexes.
   #
   # @return [ Void ]
   def run(indizes = indexes)
@@ -137,7 +137,7 @@ class Fetcher
 
     FileUtils.mkdir_p @drop_box
 
-    indizes.each { |index| scrape "#{url}&inIndex=#{index}" }
+    indizes.each { |index| scrape abs_url("#{url}&inIndex=#{index}") }
 
     @hydra.run
   end
@@ -148,11 +148,11 @@ class Fetcher
   # The method workd async as the `on_complete` callback of the response
   # object delegates to the fetchers `on_complete` method.
   #
-  # @param [ String ] url A relative URL of a page with search results.
+  # @param [ String ] url A absolute URL of a page with search results.
   #
   # @return [ Void ]
   def scrape(url)
-    req = Typhoeus::Request.new(abs_url(url))
+    req = Typhoeus::Request.new(url)
 
     req.on_complete(&method(:on_complete))
 
@@ -199,8 +199,8 @@ class Fetcher
   #
   # @param [ String ] A relative URI.
   #
-  # @return [ NET::URI ] The absolute URI.
+  # @return [ String ] The absolute URI.
   def abs_url(url)
-    URI.join('http://www.finanzen.net', URI.escape(url.to_s))
+    "http://www.finanzen.net/#{url}"
   end
 end

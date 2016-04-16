@@ -119,54 +119,12 @@ RSpec.describe Fetcher do
   end
 
   describe '#run' do
-    before do
-      @url = stub_request(:get, /inIndex=#{index}/i).to_return(body: content)
-      allow(fetcher).to receive(:indexes).and_return [index]
-    end
-
     context 'when #indexes returns DAX only' do
-      include FakeFS::SpecHelpers
-
-      let(:content) { File.read('spec/fixtures/dax.html') }
-      let(:index) { 1 }
-
-      before { fetcher.run }
-
-      it { expect(@url).to have_been_requested }
-      it('should create drop box') { expect(File).to exist(fetcher.drop_box) }
-      it('should create 1 file') do
-        expect(Dir.entries(fetcher.drop_box).count).to eq(3)
-      end
+      include_examples '#run test suite', 'dax.html', 1, 1
     end
 
     context 'when #indexes returns NASDAQ only' do
-      include FakeFS::SpecHelpers
-
-      let(:content) { File.read('spec/fixtures/nasdaq.html') }
-      let(:index) { 9 }
-
-      before { fetcher.run }
-
-      it { expect(@url).to have_been_requested.times(3) }
-      it('should create drop box') { expect(File).to exist(fetcher.drop_box) }
-      it('should create 3 files') do
-        expect(Dir.entries(fetcher.drop_box).count).to eq(5)
-      end
-    end
-
-    context 'when called with DAX only' do
-      include FakeFS::SpecHelpers
-
-      let(:content) { File.read('spec/fixtures/dax.html') }
-      let(:index) { 1 }
-
-      before { fetcher.run ["aktien/aktien_suche.asp?inIndex=#{index}"] }
-
-      it { expect(@url).to have_been_requested }
-      it('should create drop box') { expect(File).to exist(fetcher.drop_box) }
-      it('should create 1 file') do
-        expect(Dir.entries(fetcher.drop_box).count).to eq(3)
-      end
+      include_examples '#run test suite', 'nasdaq.html', 9, 3
     end
   end
 end

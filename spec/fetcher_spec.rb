@@ -54,7 +54,7 @@ RSpec.describe Fetcher do
       end
 
       it('should create no files') do
-        expect(Dir.entries(fetcher.drop_box).count).to be(2)
+        expect(Dir.entries(fetcher.drop_box).count).to eq(2)
       end
     end
   end
@@ -86,7 +86,7 @@ RSpec.describe Fetcher do
       let(:content) { File.read('spec/fixtures/dax.html') }
       subject { fetcher.indexes.count }
       before { stub_request(:get, base_url).to_return(body: content) }
-      it { is_expected.to be(197) }
+      it { is_expected.to eq(197) }
     end
 
     context 'DAX 30' do
@@ -94,7 +94,7 @@ RSpec.describe Fetcher do
 
       describe '#stocks' do
         subject { fetcher.stocks(page).count }
-        it { is_expected.to be(30) }
+        it { is_expected.to eq(30) }
       end
 
       describe '#linked_pages' do
@@ -108,7 +108,7 @@ RSpec.describe Fetcher do
 
       describe '#stocks' do
         subject { fetcher.stocks(page).count }
-        it { is_expected.to be(50) }
+        it { is_expected.to eq(50) }
       end
 
       describe '#linked_pages' do
@@ -135,7 +135,7 @@ RSpec.describe Fetcher do
       it { expect(@url).to have_been_requested }
       it('should create drop box') { expect(File).to exist(fetcher.drop_box) }
       it('should create 1 file') do
-        expect(Dir.entries(fetcher.drop_box).count).to be(3)
+        expect(Dir.entries(fetcher.drop_box).count).to eq(3)
       end
     end
 
@@ -150,7 +150,7 @@ RSpec.describe Fetcher do
       it { expect(@url).to have_been_requested.times(3) }
       it('should create drop box') { expect(File).to exist(fetcher.drop_box) }
       it('should create 3 files') do
-        expect(Dir.entries(fetcher.drop_box).count).to be(5)
+        expect(Dir.entries(fetcher.drop_box).count).to eq(5)
       end
     end
 
@@ -165,7 +165,7 @@ RSpec.describe Fetcher do
       it { expect(@url).to have_been_requested }
       it('should create drop box') { expect(File).to exist(fetcher.drop_box) }
       it('should create 1 file') do
-        expect(Dir.entries(fetcher.drop_box).count).to be(3)
+        expect(Dir.entries(fetcher.drop_box).count).to eq(3)
       end
     end
   end

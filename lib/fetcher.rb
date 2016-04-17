@@ -1,6 +1,3 @@
-require 'rubygems'
-require 'bundler/setup'
-
 require 'typhoeus'
 require 'nokogiri'
 require 'open-uri'
@@ -186,9 +183,7 @@ class Fetcher
   #
   # @return [ File ] The created file.
   def upload_stocks(stocks)
-    File.open(File.join(@drop_box, "#{SecureRandom.uuid}.txt"), 'w+') do |file|
-      stocks.each { |stock| file << "#{stock}\n" }
-    end
+    IO.write File.join(@drop_box, "#{SecureRandom.uuid}.txt"), stocks.join("\n")
   end
 
   # Add host and protocol to the URI to be absolute.

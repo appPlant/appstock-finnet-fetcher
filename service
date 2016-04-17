@@ -3,6 +3,9 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
+require 'rubygems'
+require 'bundler/setup'
+
 require 'fetcher'
 
 drop_box = ENV.fetch 'FILE_BOX', File.join(__dir__, 'vendor/mount')

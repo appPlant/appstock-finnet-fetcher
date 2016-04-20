@@ -1,49 +1,40 @@
 require 'typhoeus'
 require 'nokogiri'
 require 'open-uri'
-require 'securerandom'
 
 # The `Fetcher` class scrapes finanzen.net to get a list of all stocks.
 # To do so it extracts all indexes from the search form to make a search
 # request to get all stocks per index. In case of a paginated response it
 # follows all subsequent linked pages.
-# For each index a list gets created containing all stock links found on
-# that page with the URL of the page in the first line.
 #
-# @example Start the scraping process.
+# @example Fetch all stocks.
 #   Fetcher.new.run
+#   #=> [http://www.finanzen.net/aktien/adidas-Aktie, ...]
 #
-# @example Scrape all stocks from DAX and NASDAQ.
+# @example Fetch all stocks from DAX and NASDAQ.
 #   Fetcher.new.run(['aktien/aktien_suche.asp?inIndex=0',
 #                    'aktien/aktien_suche.asp?inIndex=9'])
+#   #=> [http://www.finanzen.net/aktien/adidas-Aktie, ...]
 #
 # @example Get a list of all stock indexes.
 #   Fetcher.new.indexes
+#   #=> [http://www.finanzen.net/aktien/adidas-Aktie, ...]
 #
 # @example Get a list of all stocks of the DAX index.
 #   Fetcher.new.stocks('aktien/aktien_suche.asp?inIndex=1')
-#   #=> [http://www.finanzen.net/aktien/adidas-Aktie,
-#        http://www.finanzen.net/aktien/Allianz-Aktie, ...]
+#   #=> [http://www.finanzen.net/aktien/adidas-Aktie, ...]
 #
 # @example Linked pages of the NASDAQ 100.
 #   Fetcher.new.linked_pages('aktien/aktien_suche.asp?inIndex=9')
 #   #=> ['aktien/aktien_suche.asp?intpagenr=2&inIndex=9',
-#        'aktien/aktien_suche.asp?intpagenr=3&inIndex=9']
+#        'aktien/aktien_suche.asp?intpagenr=3&inIndex=9', ...]
 class Fetcher
   # Intialize the fetcher.
   #
-  # @example With the default drop box location.
-  #   Fetcher.new
-  #
-  # @example With a custom drop box location.
-  #   Fetcher.new drop_box: '/Users/katzer/tmp'
-  #
-  # @param [ String ] drop_box: Optional information where to place the result.
-  #
   # @return [ Fetcher ] A new fetcher instance.
-  def initialize(drop_box: 'vendor/mount')
-    @drop_box = File.join(drop_box, SecureRandom.uuid)
-    @hydra    = Typhoeus::Hydra.new
+  def initialize
+    @hydra  = Typhoeus::Hydra.new
+    @stocks = []
   end
 
   attr_reader :drop_box
@@ -117,26 +108,27 @@ class Fetcher
   # Run the hydra with the given links to scrape the stocks from the response.
   # By default all indexes form search page will be added.
   #
-  # @example Scrape all stocks from DAX and NASDAQ.
+  # @example Fetch all stocks from DAX and NASDAQ.
   #   run(['aktien/aktien_suche.asp?inIndex=0',
   #        'aktien/aktien_suche.asp?inIndex=9'])
+  #   #=> [http://www.finanzen.net/aktien/adidas-Aktie, ...]
   #
-  # @example Scrape all stocks from all indexes.
+  # @example Fetch all stocks from all indexes.
   #   run()
+  #   #=> [http://www.finanzen.net/aktien/adidas-Aktie, ...]
   #
   # @param [ Array<String> ] Optional list of stock indexes.
   #
-  # @return [ Void ]
+  # @return [ Array<String> ] Array of links to all found stocks.
   def run(indizes = indexes)
     url = 'aktien/aktien_suche.asp?inBranche=0&inLand=0'
-
-    return unless indizes.any?
-
-    FileUtils.mkdir_p @drop_box
 
     indizes.each { |index| scrape abs_url("#{url}&inIndex=#{index}") }
 
     @hydra.run
+    @stocks.dup
+  ensure
+    @stocks.clear
   end
 
   private
@@ -164,26 +156,15 @@ class Fetcher
   #
   # @return [ Void ]
   def on_complete(res)
-    url    = res.request.url
-    page   = Nokogiri::HTML(res.body)
-    stocks = stocks(page)
+    url   = res.request.url
+    page  = Nokogiri::HTML(res.body)
+    links = stocks(page)
 
-    upload_stocks(stocks.unshift(url)) if stocks.any?
     linked_pages(page).each { |site| scrape site } if follow_linked_pages? url
-  end
-
-  # Save the list of stock links in a file. The location of that file is the
-  # former provided @drop_box path or its default value.
-  #
-  # @example To save a file.
-  #   upload_stocks(['http://www.finanzen.net/aktien/adidas-Aktie'])
-  #   #=> <File:/tmp/0c265f57-999f-497e-9dd0-eb8ee55a8b0e.txt>
-  #
-  # @param [ Array<String> ] stocks List of stock links.
-  #
-  # @return [ File ] The created file.
-  def upload_stocks(stocks)
-    IO.write File.join(@drop_box, "#{SecureRandom.uuid}.txt"), stocks.join("\n")
+  rescue
+    $stderr.puts "[Error] #{url}"
+  ensure
+    @stocks.concat(links) if defined? links
   end
 
   # Add host and protocol to the URI to be absolute.

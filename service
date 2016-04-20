@@ -6,8 +6,19 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'rubygems'
 require 'bundler/setup'
 
+require 'securerandom'
+require 'benchmark'
 require 'fetcher'
 
-drop_box = ENV.fetch 'FILE_BOX', File.join(__dir__, 'vendor/mount')
+path   = File.join(__dir__, "vendor/mount/#{SecureRandom.uuid}.txt")
+stocks = []
 
-Fetcher.new(drop_box: drop_box).run
+time = Benchmark.realtime do
+  stocks = Fetcher.new.run
+end
+
+FileUtils.mkdir_p File.dirname(path)
+File.open(path, 'w+') { |f| stocks.each { |stock| f << "#{stock}\n" } }
+
+puts "Fetched #{stocks.count} stocks from finanzen.net"
+puts "Time elapsed #{time.round(2)} seconds"

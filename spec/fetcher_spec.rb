@@ -1,5 +1,3 @@
-require 'fakefs/spec_helpers'
-
 RSpec.describe Fetcher do
   let(:base_url) { 'http://www.finanzen.net/aktien/aktien_suche.asp' }
   let(:base_params) { 'inBranche=0&inLand=0' }
@@ -32,32 +30,17 @@ RSpec.describe Fetcher do
     end
 
     describe '#fetch' do
-      before { fetcher.run }
-
-      it("should't create the drop box") do
-        expect(File).to_not exist(fetcher.drop_box)
-      end
-    end
-
-    describe '#fetch(DAX)' do
-      include FakeFS::SpecHelpers
-
-      before do
-        stub_request(:get, /inIndex=1/i).to_timeout
-        fetcher.run ['aktien/aktien_suche.asp?inIndex=1']
-      end
-
-      it('should create no files') do
-        expect(Dir.entries(fetcher.drop_box).count).to eq(2)
-      end
+      subject { fetcher.run }
+      it { is_expected.to be_empty }
     end
   end
 
   context 'when the response has wrong content' do
     let(:page) { Nokogiri::HTML('<html><body></body></html>') }
 
+    before { stub_request(:get, base_url) }
+
     describe '#indexes' do
-      before { stub_request(:get, base_url) }
       subject { fetcher.indexes }
       it { is_expected.to be_empty }
     end
@@ -69,6 +52,11 @@ RSpec.describe Fetcher do
 
     describe '#linked_pages' do
       subject { fetcher.linked_pages(page) }
+      it { is_expected.to be_empty }
+    end
+
+    describe '#fetch' do
+      subject { fetcher.run }
       it { is_expected.to be_empty }
     end
   end
@@ -95,6 +83,20 @@ RSpec.describe Fetcher do
         subject { fetcher.linked_pages(page) }
         it { is_expected.to be_empty }
       end
+
+      describe '#run' do
+        before do
+          allow(fetcher).to receive(:indexes).and_return([1])
+          @url    = stub_request(:get, /inIndex=1/i).to_return(body: content)
+          @stocks = fetcher.run
+        end
+
+        it { expect(@url).to have_been_requested }
+        it('should return 30') { expect(@stocks.count).to eq(30) }
+        it('should return valid URI schemes') do
+          expect { URI(@stocks.first) }.to_not raise_error
+        end
+      end
     end
 
     context 'NASDAQ 100' do
@@ -109,16 +111,6 @@ RSpec.describe Fetcher do
         subject { fetcher.linked_pages(page) }
         it { is_expected.to be_any }
       end
-    end
-  end
-
-  describe '#run' do
-    context 'when #indexes returns DAX only' do
-      include_examples '#run test suite', 'dax.html', 1, 1
-    end
-
-    context 'when #indexes returns NASDAQ only' do
-      include_examples '#run test suite', 'nasdaq.html', 9, 3
     end
   end
 end

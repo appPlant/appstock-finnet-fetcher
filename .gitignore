@@ -5,7 +5,6 @@ build/
 /test/tmp/
 /lib/bundler/man/
 /coverage/
-Gemfile.lock
 .dat*
 .rvmrc
 .rubocop-http*

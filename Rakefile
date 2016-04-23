@@ -4,13 +4,18 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'rspec/core/rake_task'
 
-RSpec::Core::RakeTask.new(:spec) do |t|
-  t.rspec_opts = '--format documentation --color --require spec_helper'
+begin
+  require 'rspec/core/rake_task'
+
+  RSpec::Core::RakeTask.new(:spec) do |t|
+    t.rspec_opts = '--format documentation --color --require spec_helper'
+  end
+
+  task default: :spec
+rescue LoadError
+  # RSpec isnt installed within the docker container
 end
-
-task default: :spec
 
 desc 'Run Stock-Fetcher for finanzen.net'
 task :fetch do

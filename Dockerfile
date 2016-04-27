@@ -6,7 +6,8 @@ ENV RUBY_PACKAGES ruby curl libxslt ruby-bundler ruby-io-console
 
 RUN apk update && \
     apk add --no-cache $BUILD_PACKAGES && \
-    apk add --no-cache $RUBY_PACKAGES
+    apk add --no-cache $RUBY_PACKAGES && \
+    gem update --no-ri --no-rdoc
 
 RUN cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 RUN echo "Europe/Berlin" >  /etc/timezone
@@ -23,6 +24,7 @@ RUN bundle config build.nokogiri --use-system-libraries
 RUN bundle install --no-cache --without development test
 
 RUN apk del $BUILD_PACKAGES && \
+    gem clean && \
     rm -rf /var/cache/apk/* && \
     rm -rf /usr/share/ri && \
     rm -rf $APP_HOME/vendor/bundle/cache/*.gem && \

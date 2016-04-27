@@ -15,10 +15,10 @@ matrix:
 
 before_install:
   - bundle install
-bundler_args: --without documentation development production
+bundler_args: --without development
 cache: bundler
 
 script:
   - bundle exec rake
-  - ./bin/build
+  - docker build -t appdax-finnet-fetcher
   - docker ps -a

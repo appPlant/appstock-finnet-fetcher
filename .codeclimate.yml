@@ -11,8 +11,7 @@ engines:
 ratings:
   paths:
   - lib/**
-  - "service"
 
 exclude_paths:
 - spec/**/*
-- "**/vendor/**/*"
+- vendor/**/*

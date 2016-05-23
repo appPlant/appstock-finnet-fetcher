@@ -68,7 +68,7 @@ class Fetcher
   def stocks(page)
     sel = '#mainWrapper > div.main > div.table_quotes > div.content > table tr > td:not(.no_border):first-child > a:first-child' # rubocop:disable Metrics/LineLength
 
-    page.css(sel).map { |link| abs_url link['href'] }
+    page.css(sel).map { |link| link['href'][8..-7] }
   end
 
   # Determine whether the fetcher has to follow linked lists in case of

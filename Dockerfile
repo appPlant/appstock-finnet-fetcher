@@ -32,10 +32,7 @@ RUN apk del $BUILD_PACKAGES && \
     rm -rf $APP_HOME/vendor/bundle/gems/*/spec/*
 
 COPY . $APP_HOME
-COPY scripts/init $APP_HOME/init
-RUN chmod -R +x $APP_HOME/init
+RUN chmod -R +x bin
+RUN bundle exec whenever -i
 
-COPY scripts/ /etc/periodic/
-RUN chmod -R +x /etc/periodic/
-
-CMD ["./init"]
+CMD ["./bin/init"]

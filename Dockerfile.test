@@ -21,19 +21,4 @@ RUN bundle install --no-cache --without development
 
 COPY . $APP_HOME
 
-RUN apk del $BUILD_PACKAGES && \
-    gem uninstall minitest test-unit power_assert && \
-    gem clean && \
-    rm -rf /var/cache/apk/* && \
-    rm -rf /usr/share/ri && \
-    rm -rf $APP_HOME/vendor/bundle/cache/*.gem && \
-    rm -rf $APP_HOME/vendor/bundle/extensions/* && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/test && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/spec && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/doc && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/examples && \
-    rm -rf $APP_HOME/vendor/bundle/gems/**/*.md
-
-COPY . $APP_HOME
-
 CMD ["bundle", "exec", "rspec", "spec", "--fail-fast", "--failure-exit-code", "1"]

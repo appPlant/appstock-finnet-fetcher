@@ -39,7 +39,6 @@ RUN apk del $BUILD_PACKAGES && \
     rm -rf $APP_HOME/.git && \
     rm -rf $APP_HOME/spec
 
-COPY . $APP_HOME
 RUN chmod -R +x bin
 RUN bundle exec whenever -i
 

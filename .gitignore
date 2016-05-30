@@ -7,6 +7,7 @@ build/
 /coverage/
 .dat*
 .rvmrc
+.env
 .rubocop-http*
 /tmp/
 /doc/
@@ -24,3 +25,4 @@ config/development.yml
 /pkg/
 /rdoc/
 /docker/
+/log/

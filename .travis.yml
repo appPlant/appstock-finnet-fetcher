@@ -1,24 +1,21 @@
-language: ruby
+install: true
 
-sudo: required
+sudo: false
 
 services:
   - docker
 
-rvm:
-  - 2.2
-matrix:
-  fast_finish: true
-
-before_install:
-  - bundle install
-bundler_args: --without development
-cache: bundler
+before_script:
+  - git checkout $TRAVIS_BRANCH
 
 script:
-  - bundle exec rake
-  - docker build -t appdax/finnet-fetcher:edge .
+  - docker build -t appdax/finnet-fetcher:test -f Dockerfile.test .
+  - docker run -e CODECLIMATE_REPO_TOKEN=$CODECLIMATE_REPO_TOKEN -t appdax/finnet-fetcher:test
+  - docker rmi -f appdax/finnet-fetcher:test
+  - docker build -t appdax/finnet-fetcher:edge -f Dockerfile .
   - docker ps -a
   - docker images --filter "dangling=false"
+
+after_success:
   - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - docker push appdax/finnet-fetcher

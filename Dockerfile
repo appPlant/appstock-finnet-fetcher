@@ -1,8 +1,8 @@
-FROM alpine:3.3
+FROM alpine:3.4
 MAINTAINER Sebastian Katzer "katzer@appplant.de"
 
-ENV BUILD_PACKAGES ruby-dev libffi-dev libxslt-dev gcc make libc-dev tzdata
-ENV RUBY_PACKAGES ruby curl libxslt ruby-bundler ruby-io-console
+ENV BUILD_PACKAGES ruby-dev libffi-dev libxslt-dev libxml2-dev gcc make libc-dev tzdata
+ENV RUBY_PACKAGES ruby curl ruby-bundler ruby-io-console
 
 RUN apk update && \
     apk add --no-cache $BUILD_PACKAGES && \
@@ -19,7 +19,6 @@ WORKDIR $APP_HOME
 COPY Gemfile $APP_HOME
 COPY Gemfile.lock $APP_HOME
 RUN bundle config path vendor/bundle
-RUN bundle config build.nokogiri --use-system-libraries
 RUN bundle install --no-cache --without development test
 
 COPY . $APP_HOME

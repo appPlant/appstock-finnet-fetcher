@@ -48,7 +48,8 @@ class Fetcher
   # @return [ Array<Int> ] All found stock indexes.
   def indexes
     sel  = '#frmAktienSuche table select[name="inIndex"] option:not(:first-child)' # rubocop:disable Metrics/LineLength
-    page = Nokogiri::HTML(open(abs_url('aktien/aktien_suche.asp')))
+    body = open(abs_url('aktien/aktien_suche.asp'))
+    page = Nokogiri::HTML(body, nil, 'UTF-8')
 
     page.css(sel).map { |opt| opt['value'] }
   rescue Timeout::Error
@@ -157,7 +158,7 @@ class Fetcher
   # @return [ Void ]
   def on_complete(res)
     url   = res.request.url
-    page  = Nokogiri::HTML(res.body)
+    page  = Nokogiri::HTML(res.body, nil, 'UTF-8')
     links = stocks(page)
 
     linked_pages(page).each { |site| scrape site } if follow_linked_pages? url

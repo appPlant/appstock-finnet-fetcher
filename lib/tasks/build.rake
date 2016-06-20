@@ -1,0 +1,21 @@
+namespace :build do
+  task :clean do
+    system 'docker rm $(docker ps -a -q -f status=exited)'
+    system 'docker rmi $(docker images -q -f dangling=true)'
+  end
+
+  desc 'Build image for edge tag'
+  task(:edge) { task('build:tag').invoke(:edge) }
+
+  desc 'Build image for test tag'
+  task(:test) { task('build:tag').invoke(:test) }
+
+  task(:tag, [:tag]) do |_, args|
+    tag   = args[:tag] || 'edge'
+    image = "appdax/finnet-fetcher:#{tag}"
+
+    FileUtils.ln_s "build/#{tag}/.dockerignore", '.dockerignore'
+    system "docker build -t #{image} -f build/#{tag}/Dockerfile ."
+    FileUtils.rm '.dockerignore'
+  end
+end

@@ -25,16 +25,14 @@ RUN apk update && \
     # Cleanup
     apk del $BUILD_PACKAGES && \
     gem uninstall minitest test-unit power_assert net-telnet && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/* && \
     rm -rf vendor/bundle/cache/*.gem && \
     rm -rf vendor/bundle/extensions/* && \
     rm -rf vendor/bundle/gems/*/test && \
     rm -rf vendor/bundle/gems/*/spec && \
     rm -rf vendor/bundle/gems/*/doc && \
     rm -rf vendor/bundle/gems/*/examples && \
-    rm -rf vendor/bundle/gems/**/*.md && \
-    rm -rf .git && \
-    rm -rf spec && \
+    rm -rf vendor/bundle/gems/**/*.md
 
 RUN chmod +x init && \
     bundle exec whenever -w -r fetcher

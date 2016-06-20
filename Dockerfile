@@ -36,7 +36,7 @@ RUN apk update && \
     rm -rf .git && \
     rm -rf spec && \
 
-RUN chmod -R +x bin && \
+RUN chmod +x init && \
     bundle exec whenever -w -r fetcher
 
-CMD ["./bin/init"]
+CMD ["./init"]

@@ -37,8 +37,6 @@ class Fetcher
     @stocks = []
   end
 
-  attr_reader :drop_box
-
   # Scrape all indexes from the page found under the `inIndex` menu.
   #
   # @example Scrape the indexes found at finanzen.net.

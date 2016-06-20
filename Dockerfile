@@ -1,44 +1,42 @@
 FROM alpine:3.4
-MAINTAINER Sebastian Katzer "katzer@appplant.de"
-
-ENV BUILD_PACKAGES ruby-dev libffi-dev libxslt-dev libxml2-dev gcc make libc-dev tzdata
-ENV RUBY_PACKAGES ruby curl ruby-bundler ruby-io-console
-
-RUN apk update && \
-    apk add --no-cache $BUILD_PACKAGES && \
-    apk add --no-cache $RUBY_PACKAGES && \
-    gem update bundler --no-ri --no-rdoc
-
-RUN cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime
-RUN echo "Europe/Berlin" > /etc/timezone
+MAINTAINER Sebastian Katzer "katzer.sebastian@googlemail.com"
 
 ENV APP_HOME /usr/app/
+ENV BUILD_PACKAGES ruby-dev libffi-dev libxslt-dev libxml2-dev gcc make libc-dev tzdata
+ENV RUBY_PACKAGES ruby curl ruby-io-console
+
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
+COPY . $APP_HOME
 
 COPY Gemfile $APP_HOME
 COPY Gemfile.lock $APP_HOME
-RUN bundle config path vendor/bundle
-RUN bundle install --no-cache --without development test
 
-COPY . $APP_HOME
+RUN apk update && \
+    # Install Ruby packages
+    apk add --no-cache $BUILD_PACKAGES && \
+    apk add --no-cache $RUBY_PACKAGES && \
+    # Timezone
+    cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime && \
+    echo "Europe/Berlin" > /etc/timezone && \
+    # Bundle
+    gem install bundler --no-ri --no-rdoc && \
+    bundle install --path vendor/bundle --no-cache --without development test && \
+    # Cleanup
+    apk del $BUILD_PACKAGES && \
+    gem uninstall minitest test-unit power_assert net-telnet && \
+    rm -rf /var/cache/apk/*
+    rm -rf vendor/bundle/cache/*.gem && \
+    rm -rf vendor/bundle/extensions/* && \
+    rm -rf vendor/bundle/gems/*/test && \
+    rm -rf vendor/bundle/gems/*/spec && \
+    rm -rf vendor/bundle/gems/*/doc && \
+    rm -rf vendor/bundle/gems/*/examples && \
+    rm -rf vendor/bundle/gems/**/*.md && \
+    rm -rf .git && \
+    rm -rf spec && \
 
-RUN apk del $BUILD_PACKAGES && \
-    gem uninstall minitest test-unit power_assert && \
-    gem clean && \
-    rm -rf /var/cache/apk/* && \
-    rm -rf /usr/share/ri && \
-    rm -rf $APP_HOME/vendor/bundle/cache/*.gem && \
-    rm -rf $APP_HOME/vendor/bundle/extensions/* && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/test && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/spec && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/doc && \
-    rm -rf $APP_HOME/vendor/bundle/gems/*/examples && \
-    rm -rf $APP_HOME/vendor/bundle/gems/**/*.md && \
-    rm -rf $APP_HOME/.git && \
-    rm -rf $APP_HOME/spec
-
-RUN chmod -R +x bin
-RUN bundle exec whenever -w -r fetcher
+RUN chmod -R +x bin && \
+    bundle exec whenever -w -r fetcher
 
 CMD ["./bin/init"]
